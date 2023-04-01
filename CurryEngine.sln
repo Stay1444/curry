@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurryEngine.Editor", "CurryEngine.Editor\CurryEngine.Editor.csproj", "{26638839-E39D-47A5-9E18-71658D63BC2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurryEngine", "CurryEngine\CurryEngine.csproj", "{48023344-1014-4136-9D22-126A3DAF48AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FNA", "vendor\FNA\FNA.csproj", "{35253CE1-C864-4CD3-8249-4D1319748E8F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26638839-E39D-47A5-9E18-71658D63BC2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26638839-E39D-47A5-9E18-71658D63BC2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26638839-E39D-47A5-9E18-71658D63BC2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26638839-E39D-47A5-9E18-71658D63BC2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48023344-1014-4136-9D22-126A3DAF48AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48023344-1014-4136-9D22-126A3DAF48AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48023344-1014-4136-9D22-126A3DAF48AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48023344-1014-4136-9D22-126A3DAF48AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35253CE1-C864-4CD3-8249-4D1319748E8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35253CE1-C864-4CD3-8249-4D1319748E8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35253CE1-C864-4CD3-8249-4D1319748E8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35253CE1-C864-4CD3-8249-4D1319748E8F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

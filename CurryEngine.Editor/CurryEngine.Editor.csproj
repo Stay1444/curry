@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ApplicationIcon>Icon.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="ImGui.NET" Version="1.89.4" />
+      <PackageReference Include="Serilog" Version="2.12.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+      <PackageReference Include="YamlDotNet" Version="13.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resources\Icons\curry.png" />
+      <EmbeddedResource Include="Icon.ico" />
+      <None Remove="Resources\Icons\curry.ico" />
+      <None Remove="Resources\Icons\curry.bmp" />
+      <None Remove="Icon.bmp" />
+      <EmbeddedResource Include="Icon.bmp" />
+      <None Remove="Resources\Icons\error.png" />
+      <EmbeddedResource Include="Resources\Icons\error.png" />
+      <None Remove="Resources\Icons\info.png" />
+      <EmbeddedResource Include="Resources\Icons\info.png" />
+      <None Remove="Resources\Icons\warn.png" />
+      <EmbeddedResource Include="Resources\Icons\warn.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CurryEngine\CurryEngine.csproj" />
+    </ItemGroup>
+
+</Project>
