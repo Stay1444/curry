@@ -1,7 +1,6 @@
-﻿
-using CurryEngine.Editor;
+﻿using CurryEngine.Editor;
+using Microsoft.Xna.Framework;
 using Serilog;
-using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -9,6 +8,10 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     #endif
     .CreateLogger();
+
+FNALoggerEXT.LogInfo = Log.Debug;
+FNALoggerEXT.LogError = Log.Error;
+FNALoggerEXT.LogWarn = Log.Warning;
 
 var editor = new CurryEditor();
 

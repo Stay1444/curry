@@ -23,7 +23,8 @@ public sealed class CurryGame : IDisposable
 
     public void LoadContent()
     {
-        _texture = Texture2D.FromFile(this._graphicsDevice, "Backrooms_model.jpg");
+        using var str = File.OpenRead("Backrooms_model.jpg");
+        _texture = Texture2D.FromStream(this._graphicsDevice, str);
         _spriteBatch = new SpriteBatch(_graphicsDevice);
     }
 
@@ -52,7 +53,7 @@ public sealed class CurryGame : IDisposable
 
     public void Draw(GameTime time)
     {
-        _spriteBatch.Begin(SpriteSortMode.BackToFront); // TODO: Might change this later
+        _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend); // TODO: Might change this later
 
         _spriteBatch.Draw(_texture, new Rectangle((int)_pos.X, (int)_pos.Y, 100, 100), Color.White);
         

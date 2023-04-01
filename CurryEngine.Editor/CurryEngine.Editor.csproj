@@ -7,6 +7,7 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Icon.ico</ApplicationIcon>
+        <PublishAot>true</PublishAot>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,6 +35,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CurryEngine\CurryEngine.csproj" />
+      <ProjectReference Include="..\vendor\FNA\FNA.csproj" />
     </ItemGroup>
 
 </Project>

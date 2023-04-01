@@ -1,4 +1,5 @@
-﻿using CurryEngine.Editor.UI;
+﻿using System.Diagnostics;
+using CurryEngine.Editor.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -26,10 +27,13 @@ public sealed class CurryEditor : Game
     {
         Log.Information("Initializing editor");
         IsMouseVisible = true;
-        Window.IsBorderless = false;
+        Window.IsBorderlessEXT = false;
         Window.AllowUserResizing = true;
         base.Initialize();
         Log.Information("Editor ready");
+        _graphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
+        IsFixedTimeStep = true;
+        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 200));
     }
 
     protected override void LoadContent()
@@ -42,8 +46,20 @@ public sealed class CurryEditor : Game
         _graphicsDeviceManager.PreferredBackBufferHeight = (int) (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / 1.2);
         _graphicsDeviceManager.ApplyChanges();
         Log.Information("Content ready");
+        
         //_game = CurryGame.Create(this.GraphicsDevice);
         //_game.LoadContent();
+    }
+
+    protected override void OnExiting(object sender, EventArgs args)
+    {
+        // TODO: Save things
+        
+        #if DEBUG
+        // TODO: This is garbage. FNA hangs indefinitely after calling Exit() so we have to do this terrible fix.
+        // https://github.com/FNA-XNA/FNA/issues/416
+        Process.GetCurrentProcess().Kill(); 
+        #endif
     }
 
     protected override void Update(GameTime gameTime)
@@ -69,7 +85,7 @@ public sealed class CurryEditor : Game
         }
         
 
-        _spriteBatch.Begin(SpriteSortMode.BackToFront); // TODO: Might change this later
+        _spriteBatch.Begin(SpriteSortMode.BackToFront, blendState: BlendState.AlphaBlend); // TODO: Might change this later
 
         _editorRenderer.Render(gameTime);
         
