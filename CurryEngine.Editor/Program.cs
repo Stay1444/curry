@@ -14,5 +14,4 @@ FNALoggerEXT.LogError = Log.Error;
 FNALoggerEXT.LogWarn = Log.Warning;
 
 var editor = new CurryEditor();
-
 editor.Run();

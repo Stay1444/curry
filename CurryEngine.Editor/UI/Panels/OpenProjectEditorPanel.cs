@@ -3,22 +3,21 @@ using ImGuiNET;
 
 namespace CurryEngine.Editor.UI.Panels;
 
-public class NewProjectEditorPanel : EditorPanel
+public class OpenProjectEditorPanel : EditorPanel
 {
     private readonly EditorRenderer _renderer;
     private bool _popupOpen = false;
     private bool _open = true;
-    private string _name = "My New Project";
     private string _path = Environment.CurrentDirectory;
 
-    public NewProjectEditorPanel(EditorRenderer renderer)
+    public OpenProjectEditorPanel(EditorRenderer renderer)
     {
         _renderer = renderer;
     }
 
     public override void Render()
     {
-        const string id = "###new_project";
+        const string id = "###open_project";
 
         if (ImGui.IsPopupOpen(id) && !_popupOpen)
         {
@@ -39,21 +38,18 @@ public class NewProjectEditorPanel : EditorPanel
         }
 
         ImGui.SetNextWindowSize(new Vector2(500, 120));
-        ImGui.BeginPopupModal("New Project" + id, ref _open, ImGuiWindowFlags.NoResize);
-
-        ImGui.Text("Project Name:");
-        ImGui.SameLine();
-        ImGui.InputText("###name", ref _name, 100);
+        ImGui.BeginPopupModal("Open Project" + id, ref _open, ImGuiWindowFlags.NoResize);
         
         ImGui.Text("Folder Path [TODO]:"); // TODO
         ImGui.SameLine();
-        ImGui.InputText("###path", ref _path, 100);
+        ImGui.InputText("###open_project", ref _path, 100);
 
-        if (ImGui.Button("Create"))
+        if (ImGui.Button("Open"))
         {
+            _renderer.Editor.Project = CurryProject.Load(_path);
+            _renderer.Editor.CreateGame();
+            this.ShouldBeRemoved = true;
             ImGui.CloseCurrentPopup();
-            Directory.CreateDirectory(Path.Combine(_path, _name));
-            _renderer.Editor.Project = CurryProject.Create(Path.Combine(_path, _name), _name);
         }
         
         ImGui.EndPopup();

@@ -13,6 +13,7 @@ public class ImGuiRenderer
 
         // Graphics
         private GraphicsDevice _graphicsDevice;
+        public GraphicsDevice GraphicsDevice => _graphicsDevice;
 
         private BasicEffect _effect;
         private RasterizerState _rasterizerState;

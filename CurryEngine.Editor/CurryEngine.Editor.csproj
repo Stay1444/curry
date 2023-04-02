@@ -8,13 +8,19 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Icon.ico</ApplicationIcon>
         <PublishAot>true</PublishAot>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="ImGui.NET" Version="1.89.4" />
+      <PackageReference Include="MimeTypes" Version="2.4.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Serilog" Version="2.12.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
       <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+      <PackageReference Include="Svg" Version="3.4.4" />
       <PackageReference Include="YamlDotNet" Version="13.0.2" />
     </ItemGroup>
 
@@ -31,6 +37,61 @@
       <EmbeddedResource Include="Resources\Icons\info.png" />
       <None Remove="Resources\Icons\warn.png" />
       <EmbeddedResource Include="Resources\Icons\warn.png" />
+      <None Remove="Resources\Icons\fs\file-code-regular.svg" />
+      <None Remove="Resources\Icons\fs\file-regular.svg" />
+      <None Remove="Resources\Icons\fs\folder-regular.svg" />
+      <None Remove="Resources\Icons\fs\folder-solid.svg" />
+      <None Remove="Resources\Icons\fs\folder-back.svg" />
+      <None Remove="Resources\Icons\panel-icons\game.svg" />
+      <None Remove="Resources\Icons\panel-icons\hierarchy.svg" />
+      <None Remove="Resources\Icons\panel-icons\inspector.svg" />
+      <None Remove="Resources\Icons\panel-icons\logs.svg" />
+      <None Remove="Resources\Icons\panel-icons\viewport.svg" />
+      <None Remove="Resources\Fonts\Ubuntu.ttf" />
+      <EmbeddedResource Include="Resources\Fonts\Ubuntu.ttf" />
+      <None Remove="Resources\Fonts\fa-regular-400.ttf" />
+      <EmbeddedResource Include="Resources\Fonts\fa-regular-400.ttf" />
+      <None Remove="Resources\Fonts\fontawesome-webfont.ttf" />
+      <EmbeddedResource Include="Resources\Fonts\fontawesome-webfont.ttf" />
+      <None Remove="Resources\Icons\fs\folder.svg" />
+      <None Remove="Resources\Icons\fs\folder.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\folder.png" />
+      <None Remove="Resources\Icons\fs\ext\cs.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\cs.png" />
+      <None Remove="Resources\Icons\fs\ext\lua.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\lua.png" />
+      <None Remove="Resources\Icons\fs\ext\ogg.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\ogg.png" />
+      <None Remove="Resources\Icons\fs\ext\py.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\py.png" />
+      <None Remove="Resources\Icons\fs\ext\svg.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\svg.png" />
+      <None Remove="Resources\Icons\fs\ext\txt.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\txt.png" />
+      <None Remove="Resources\Icons\fs\ext\unknown.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\unknown.png" />
+      <None Remove="Resources\Icons\fs\ext\wav.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\wav.png" />
+      <None Remove="Resources\Icons\fs\ext\xml.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\xml.png" />
+      <None Remove="Resources\Icons\fs\ext\ttf.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\ttf.png" />
+      <None Remove="Resources\Icons\fs\ext\cscn.svg" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\cscn.svg" />
+      <None Remove="Resources\Icons\fs\ext\cprj.png" />
+      <EmbeddedResource Include="Resources\Icons\fs\ext\cprj.png" />
+      <None Remove="Resources\Icons\left.png" />
+      <None Remove="Resources\Icons\right.png" />
+      <None Remove="Resources\Icons\up.png" />
+      <None Remove="Resources\Icons\caret.png" />
+      <None Remove="Resources\Icons\caret-down.svg" />
+      <EmbeddedResource Include="Resources\Icons\caret-down.svg" />
+      <None Remove="Resources\Icons\caret-left.svg" />
+      <EmbeddedResource Include="Resources\Icons\caret-left.svg" />
+      <None Remove="Resources\Icons\caret-right.svg" />
+      <EmbeddedResource Include="Resources\Icons\caret-right.svg" />
+      <None Remove="Resources\Icons\caret-up.svg" />
+      <EmbeddedResource Include="Resources\Icons\caret-up.svg" />
     </ItemGroup>
 
     <ItemGroup>

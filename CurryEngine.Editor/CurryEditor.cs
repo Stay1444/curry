@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using CurryEngine.Editor.UI;
+using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -13,9 +14,45 @@ public sealed class CurryEditor : Game
     private readonly GraphicsDeviceManager _graphicsDeviceManager;
     private SpriteBatch _spriteBatch = null!;
     private EditorRenderer _editorRenderer = null!;
+    private CurryProject _project;
+    
+    private bool _sceneHasUnsavedChanges = false;
+    
     
     public CurryGame? Game { get; set; }
-    public CurryProject? Project { get; set; }
+    public GameObject? SelectedEntity { get; set; }
+
+    public bool SceneHasUnsavedChanges
+    {
+        get => _sceneHasUnsavedChanges;
+        set
+        {
+            if (value)
+            {
+                Window.Title = "CurryEngine | Unsaved Changes";
+            }
+            else
+            {
+                Window.Title = "CurryEngine";
+            }
+
+            _sceneHasUnsavedChanges = value;
+        }
+    }
+    
+    public CurryProject? Project
+    {
+        get => _project;
+        set
+        {
+            _project = value;
+            if (_project is not null)
+            {
+                Environment.CurrentDirectory = _project.Path;
+            }
+            _editorRenderer.Reload();
+        }
+    }
     public RenderTarget2D? GameOutputTexture { get; set; }
     public VLogger VLogger { get; } = new VLogger();
     public CurryEditor()
@@ -23,8 +60,27 @@ public sealed class CurryEditor : Game
         _graphicsDeviceManager = new GraphicsDeviceManager(this);
     }
 
+    public void CreateGame()
+    {
+        Game = CurryGame.Create(GraphicsDevice);
+        Game.LoadContent();
+    }
+
+    public void ChangeScene(Scene newScene)
+    {
+        if (newScene.Id == Game?.ActiveScene?.Id) return;
+        Game?.SwitchScene(newScene);
+    }
+
+    public void DestroyGame()
+    {
+        Game.Dispose();
+        Game = null;
+    }
+
     protected override void Initialize()
     {
+        Window.Title = "CurryEngine";
         Log.Information("Initializing editor");
         IsMouseVisible = true;
         Window.IsBorderlessEXT = false;
@@ -47,26 +103,35 @@ public sealed class CurryEditor : Game
         _graphicsDeviceManager.ApplyChanges();
         Log.Information("Content ready");
         
-        //_game = CurryGame.Create(this.GraphicsDevice);
-        //_game.LoadContent();
+        //Game = CurryGame.Create(this.GraphicsDevice);
+        //Game.LoadContent();
+        
     }
 
-    protected override void OnExiting(object sender, EventArgs args)
+    protected override bool OnExiting(object sender, EventArgs args)
     {
-        // TODO: Save things
-        
-        #if DEBUG
-        // TODO: This is garbage. FNA hangs indefinitely after calling Exit() so we have to do this terrible fix.
-        // https://github.com/FNA-XNA/FNA/issues/416
-        Process.GetCurrentProcess().Kill(); 
-        #endif
+        if (SceneHasUnsavedChanges)
+        {
+            ImGui.OpenPopup("###exit_confirmation");
+            return false;
+        }
+
+        return true;
     }
 
     protected override void Update(GameTime gameTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
+        if (Keyboard.GetState().IsKeyDown(Keys.Escape)) ImGui.CloseCurrentPopup();
 
-        //_game.Update(gameTime);
+        if (Game is not null)
+        {
+            Game.Update(gameTime);
+        }
+
+        if (Keyboard.GetState().IsKeyDown(Keys.LeftControl) && Keyboard.GetState().IsKeyDown(Keys.S))
+        {
+            SceneHasUnsavedChanges = false;
+        }
         
         base.Update(gameTime);
     }
@@ -75,11 +140,11 @@ public sealed class CurryEditor : Game
     {
         GraphicsDevice.Clear(Color.Red);
 
-        if (GameOutputTexture is not null)
+        if (GameOutputTexture is not null && Game is not null)
         {
             GraphicsDevice.SetRenderTarget(GameOutputTexture);
             
-            //_game.Draw(gameTime);
+            Game.Draw(gameTime);
 
             GraphicsDevice.SetRenderTarget(null);
         }

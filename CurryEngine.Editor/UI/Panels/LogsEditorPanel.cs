@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using IconFonts;
 using ImGuiNET;
 using Serilog.Events;
 
@@ -15,7 +16,7 @@ public class LogsEditorPanel : EditorPanel
 
     public override void Render()
     {
-        ImGui.Begin("Logs");
+        ImGui.Begin($"{FontAwesome4.FileText} Logs");
         ImGui.Indent(15);
         foreach (var (level, message) in _renderer.Editor.VLogger.Logs)
         {

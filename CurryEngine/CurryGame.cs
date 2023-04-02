@@ -8,9 +8,9 @@ public sealed class CurryGame : IDisposable
 {
     private readonly GraphicsDevice _graphicsDevice;
     private SpriteBatch _spriteBatch = null!;
+    public Scene? ActiveScene { get; private set; }
+    public bool Paused { get; set; } = true;
     
-    private Texture2D _texture = null!;
-    private Vector2 _pos = new Vector2(0, 0);
     private CurryGame(GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
@@ -21,47 +21,35 @@ public sealed class CurryGame : IDisposable
         return new CurryGame(graphicsDevice);
     }
 
+    public void SwitchScene(Scene newScene)
+    {
+        ActiveScene = newScene;
+    }
+    
     public void LoadContent()
     {
-        using var str = File.OpenRead("Backrooms_model.jpg");
-        _texture = Texture2D.FromStream(this._graphicsDevice, str);
         _spriteBatch = new SpriteBatch(_graphicsDevice);
     }
 
     public void Update(GameTime time)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.W))
-        {
-            _pos = new Vector2(_pos.X, _pos.Y - 1);
-        }
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.S))
-        {
-            _pos = new Vector2(_pos.X, _pos.Y + 1);
-        }
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.D))
-        {
-            _pos = new Vector2(_pos.X + 1, _pos.Y);
-        }
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.A))
-        {
-            _pos = new Vector2(_pos.X - 1, _pos.Y);
-        }
+        if (Paused) return;
     }
 
     public void Draw(GameTime time)
     {
+        if (ActiveScene is null) return;
+        
+        _graphicsDevice.Clear(Color.CornflowerBlue);
+        
         _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend); // TODO: Might change this later
 
-        _spriteBatch.Draw(_texture, new Rectangle((int)_pos.X, (int)_pos.Y, 100, 100), Color.White);
-        
         _spriteBatch.End();
     }
 
     public void Dispose()
     {
-        
+        this.Paused = true;
+        this.ActiveScene = null;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using CurryEngine.Editor.Rendering.ImGUI;
 using IconFonts;
 using ImGuiNET;
 using Microsoft.Xna.Framework.Graphics;
@@ -7,14 +6,15 @@ using Serilog;
 
 namespace CurryEngine.Editor.UI.Panels;
 
-public class ViewportEditorPanel : EditorPanel
+public class GameEditorPanel : EditorPanel
 {
     private readonly EditorRenderer _renderer;
     private Vector2 _previousSize;
     
     private bool _textureRegistered = false;
     private nint _textureId;
-    public ViewportEditorPanel(EditorRenderer renderer)
+    
+    public GameEditorPanel(EditorRenderer renderer)
     {
         _renderer = renderer;
     }
@@ -22,7 +22,7 @@ public class ViewportEditorPanel : EditorPanel
     public override void Render()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        if (ImGui.Begin($"{FontAwesome4.Eye} Viewport###viewport") && _renderer.Editor.Game is not null && _renderer.Editor.Game.ActiveScene is not null)
+        if (ImGui.Begin($"{FontAwesome4.Gamepad} Game###game") && _renderer.Editor.Game is not null && _renderer.Editor.Game.ActiveScene is not null)
         {
             var size = ImGui.GetContentRegionAvail();
             
@@ -34,7 +34,7 @@ public class ViewportEditorPanel : EditorPanel
                 if (_textureRegistered)
                 {
                     _renderer.ImGuiRenderer.UnbindTexture(_textureId);
-                    Log.Debug("Viewport Texture {id} unbound", _textureId);
+                    Log.Debug("Game Texture {id} unbound", _textureId);
                 }
 
                 if (size is {X: > 1, Y: > 1})
@@ -56,7 +56,7 @@ public class ViewportEditorPanel : EditorPanel
             {
                 _textureRegistered = false;
                 _renderer.ImGuiRenderer.UnbindTexture(_textureId);
-                Log.Debug("Viewport Texture {id} unbound", _textureId);
+                Log.Debug("Game Texture {id} unbound", _textureId);
             }
 
             _renderer.Editor.GameOutputTexture = null;

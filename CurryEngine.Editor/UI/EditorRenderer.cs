@@ -1,12 +1,14 @@
-﻿using CurryEngine.Editor.Rendering.ImGUI;
+﻿using System.Runtime.InteropServices;
+using CurryEngine.Editor.Rendering.ImGUI;
 using CurryEngine.Editor.UI.Panels;
+using IconFonts;
 using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Vector2 = System.Numerics.Vector2;
 
 namespace CurryEngine.Editor.UI;
 
-public class EditorRenderer
+public class EditorRenderer : IDisposable
 {
     private readonly CurryEditor _editor;
     private ImGuiRenderer _renderer;
@@ -14,8 +16,9 @@ public class EditorRenderer
     
     public CurryEditor Editor => _editor;
     public ImGuiRenderer ImGuiRenderer => _renderer;
-    public ImFontPtr Font20 { get; }
+    public ImFontPtr Font18 { get; }
     public ImFontPtr Font16 { get; }
+    public ImFontPtr IconFont { get; }
     
     public EditorRenderer(CurryEditor editor)
     {
@@ -29,26 +32,81 @@ public class EditorRenderer
         ImGuiUtils.SetupImGuiStyle();
 
         // TODO: Load fonts from memory / assembly storage.
-        Font20 = ImGui.GetIO().Fonts.AddFontFromFileTTF("Ubuntu.ttf", 20);
-        Font16 = ImGui.GetIO().Fonts.AddFontFromFileTTF("Ubuntu.ttf", 16);
+        unsafe
+        {
+            ImFontConfigPtr config = ImGuiNative.ImFontConfig_ImFontConfig();
+
+            config.MergeMode = true;
+            config.PixelSnapH = true;
+            config.GlyphMinAdvanceX = 16.0f;
+            
+            var rangeHandle = GCHandle.Alloc(new ushort[]
+            {
+                FontAwesome4.IconMin,
+                FontAwesome4.IconMax,
+                0
+            }, GCHandleType.Pinned);
+
+            try
+            {
+                //IconFont = ImGui.GetIO().Fonts.AddFontFromAssemblyResource("CurryEngine.Editor.Resources.Fonts");
+                //Font18 = ImGui.GetIO().Fonts
+                //    .AddFontFromFileTTF("Ubuntu.ttf", 16, config, rangeHandle.AddrOfPinnedObject());
+
+                Font18 = ImGui.GetIO().Fonts
+                    .AddFontFromAssemblyResource("CurryEngine.Editor.Resources.Fonts.Ubuntu.ttf", 18);
+
+                IconFont = ImGui.GetIO().Fonts.AddFontFromAssemblyResource(
+                    "CurryEngine.Editor.Resources.Fonts.fontawesome-webfont.ttf", 16, config, rangeHandle.AddrOfPinnedObject());
+                
+
+                Font16 = ImGui.GetIO().Fonts
+                    .AddFontFromAssemblyResource("CurryEngine.Editor.Resources.Fonts.Ubuntu.ttf", 16);
+                
+                IconFont = ImGui.GetIO().Fonts.AddFontFromAssemblyResource(
+                    "CurryEngine.Editor.Resources.Fonts.fontawesome-webfont.ttf", 16, config, rangeHandle.AddrOfPinnedObject());
+            }
+            finally
+            {
+                config.Destroy();
+
+                if (rangeHandle.IsAllocated)
+                {
+                    rangeHandle.Free();
+                }
+            }
+        }
         
         _renderer.RebuildFontAtlas();
-        
 
+        FileExtensionImageProvider.Register(_renderer);
+        
+        Reload();
+    }
+
+    public void Reload()
+    {
+        foreach (var panel in _panels)
+        {
+            if (panel is IDisposable disposable)
+                disposable.Dispose();
+        }
+
+        _panels = new List<EditorPanel>();
+        
         _panels.AddRange(new EditorPanel[]
         {
-            new ContentBrowserEditorPanel(this),
             new LogsEditorPanel(this),
+            new ContentBrowserEditorPanel(this),
             new InspectorEditorPanel(this),
             new HierarchyEditorPanel(this),
-            new ViewportEditorPanel(this)
+            new ViewportEditorPanel(this),
         });
     }
 
     public void Render(GameTime gameTime)
     {
         _renderer.BeforeLayout(gameTime);
-        
 
         // Draw parent window
 
@@ -63,7 +121,7 @@ public class EditorRenderer
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0,0));
         
         
-        ImGui.PushFont(Font20);
+        ImGui.PushFont(Font18);
 
         ImGui.Begin("##master", 
             ImGuiWindowFlags.NoResize
@@ -84,27 +142,30 @@ public class EditorRenderer
                 
                 if (ImGui.MenuItem("Open Project..."))
                 {
-                    //TODO
+                    _panels.Add(new OpenProjectEditorPanel(this));
                 }
 
                 if (ImGui.MenuItem("New Project..."))
                 {
                     _panels.Add(new NewProjectEditorPanel(this));
                 }
-                
-                if (ImGui.MenuItem("New Scene", "Ctrl+N"))
-                {
-                    // TODO
-                }
 
-                if (ImGui.MenuItem("Save Scene", "Ctrl+S"))
+                if (_editor.Project is not null)
                 {
-                    // TODO
-                }
+                    if (ImGui.MenuItem("New Scene", "Ctrl+N"))
+                    {
+                        _panels.Add(new NewSceneEditorPanel(this));
+                    }
 
-                if (ImGui.MenuItem("Save Scene As...", "Ctrl+Shift+S"))
-                {
-                    // TODO
+                    if (ImGui.MenuItem("Save Scene", "Ctrl+S"))
+                    {
+                        // TODO
+                    }
+
+                    if (ImGui.MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+                    {
+                        // TODO
+                    }    
                 }
                 
                 ImGui.Separator();
@@ -132,6 +193,8 @@ public class EditorRenderer
             if (p.ShouldBeRemoved)
             {
                 _panels.RemoveAt(i);
+                if (p is IDisposable disposable)
+                    disposable.Dispose();
                 i--;
                 continue;
             }
@@ -139,5 +202,13 @@ public class EditorRenderer
         }
         
         _renderer.AfterLayout();
+    }
+
+    public void Dispose()
+    {
+        foreach (var panel in _panels)
+        {
+            if (panel is IDisposable disposable) disposable.Dispose();
+        }        
     }
 }

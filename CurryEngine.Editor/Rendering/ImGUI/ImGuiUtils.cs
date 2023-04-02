@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
+using System.Reflection;
 using ImGuiNET;
 
 namespace CurryEngine.Editor.Rendering.ImGUI;
 
-public class ImGuiUtils
+public static class ImGuiUtils
 {
     public static void SetupImGuiStyle()
     {
@@ -62,5 +63,33 @@ public class ImGuiUtils
         style.Colors[(int)ImGuiCol.NavWindowingHighlight] = new (1.00f, 1.00f, 1.00f, 0.70f);
         style.Colors[(int)ImGuiCol.NavWindowingDimBg]     = new (0.80f, 0.80f, 0.80f, 0.20f);
         style.Colors[(int)ImGuiCol.ModalWindowDimBg]      = new (0.80f, 0.80f, 0.80f, 0.0f);
+    }
+
+    public static unsafe ImFontPtr AddFontFromAssemblyResource(this ImFontAtlasPtr p, string path, int size, ImFontConfigPtr cptr, nint ranges)
+    {
+        using var stream = Assembly.GetCallingAssembly().GetManifestResourceStream(path)!;
+
+        using var ms = new MemoryStream();
+
+        stream.CopyTo(ms);
+
+        var span = ms.GetBuffer().AsSpan();
+        fixed (byte* bp = span) {
+            return p.AddFontFromMemoryTTF((nint)bp, span.Length, size, cptr, ranges);
+        }
+    }
+    
+    public static unsafe ImFontPtr AddFontFromAssemblyResource(this ImFontAtlasPtr p, string path, int size)
+    {
+        using var stream = Assembly.GetCallingAssembly().GetManifestResourceStream(path)!;
+
+        using var ms = new MemoryStream();
+
+        stream.CopyTo(ms);
+
+        var span = ms.GetBuffer().AsSpan();
+        fixed (byte* bp = span) {
+            return p.AddFontFromMemoryTTF((nint)bp, span.Length, size);
+        }
     }
 }
