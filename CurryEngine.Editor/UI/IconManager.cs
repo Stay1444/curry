@@ -13,4 +13,12 @@ public static class IconManager
         = new("CurryEngine.Editor.Resources.Icons.caret-left.svg", 512, 512);
     public static readonly Icon I_CaretRight_Icon
         = new("CurryEngine.Editor.Resources.Icons.caret-right.svg", 512, 512);
+
+    public static readonly Icon I_Gizmo_Icon
+        = new Icon("CurryEngine.Editor.Resources.Icons.gizmo.png", 480, 480);
+    
+    public static readonly Icon I_Camera_Icon
+        = new("CurryEngine.Editor.Resources.Icons.camera.png", 512, 512);
+    public static readonly Icon I_Image_Icon
+        = new("CurryEngine.Editor.Resources.Icons.image.png", 512, 512);
 }

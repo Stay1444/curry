@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using CurryEngine.Editor.UI;
+using CurryEngine.IO;
 using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Serilog;
-using Serilog.Events;
 
 namespace CurryEngine.Editor;
 
@@ -14,24 +14,28 @@ public sealed class CurryEditor : Game
     private readonly GraphicsDeviceManager _graphicsDeviceManager;
     private SpriteBatch _spriteBatch = null!;
     private EditorRenderer _editorRenderer = null!;
-    private CurryProject _project;
+    private CurryProject? _project;
+    private string? _projectFilePath;
+    private string? _projectFolderPath;
     
     private bool _sceneHasUnsavedChanges = false;
     
+    public static string AppDataPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CurryEngine");
     
     public CurryGame? Game { get; set; }
     public GameObject? SelectedEntity { get; set; }
-
+    public EditorRenderer EditorRenderer => _editorRenderer;
     public bool SceneHasUnsavedChanges
     {
         get => _sceneHasUnsavedChanges;
         set
         {
-            if (value)
+            if (value && !_sceneHasUnsavedChanges)
             {
                 Window.Title = "CurryEngine | Unsaved Changes";
             }
-            else
+            else if (_sceneHasUnsavedChanges)
             {
                 Window.Title = "CurryEngine";
             }
@@ -39,29 +43,62 @@ public sealed class CurryEditor : Game
             _sceneHasUnsavedChanges = value;
         }
     }
-    
-    public CurryProject? Project
+
+    public CurryProject? Project => _project;
+    public string? ProjectFilePath => _projectFilePath;
+    public string? ProjectFolderPath => _projectFolderPath;
+
+    public void SetProject(CurryProject project, string folderPath, string filePath)
     {
-        get => _project;
-        set
-        {
-            _project = value;
-            if (_project is not null)
-            {
-                Environment.CurrentDirectory = _project.Path;
-            }
-            _editorRenderer.Reload();
-        }
+
+        this._project = project;
+        this._projectFolderPath = folderPath;
+        this._projectFilePath = filePath;
+        
+        Environment.CurrentDirectory = folderPath;
+        
+        _editorRenderer.Reload();
     }
+
+    public void SaveProject()
+    {
+        if (_project is null) return;
+        using var fs = File.OpenWrite(_projectFilePath!);
+        CurryProject.Write(_project, new BinaryWriter(fs));
+    }
+
+    public void SaveCurrentScene()
+    {
+        if (_project is null) return;
+
+        if (!_sceneHasUnsavedChanges) return;
+            
+        if (Game?.ActiveScene is null) return;
+            
+        var assetDescriptor = _project.AssetDescriptors.Values.FirstOrDefault(x => x.Id == Game?.ActiveScene?.Id);
+
+        if (assetDescriptor is null) return;
+
+        using var fs = File.OpenWrite(assetDescriptor.Path);
+            
+        SceneSerializationHelper.Serialize(Game.ActiveScene, new BinaryWriter(fs));
+            
+        SceneHasUnsavedChanges = false;
+    }
+    
     public RenderTarget2D? GameOutputTexture { get; set; }
     public VLogger VLogger { get; } = new VLogger();
+    
     public CurryEditor()
     {
         _graphicsDeviceManager = new GraphicsDeviceManager(this);
+        Directory.CreateDirectory(AppDataPath);
     }
 
     public void CreateGame()
     {
+        DestroyGame();
+        
         Game = CurryGame.Create(GraphicsDevice);
         Game.LoadContent();
     }
@@ -74,8 +111,9 @@ public sealed class CurryEditor : Game
 
     public void DestroyGame()
     {
-        Game.Dispose();
-        Game = null;
+        GameOutputTexture?.Dispose();
+
+        Game?.Dispose();
     }
 
     protected override void Initialize()
@@ -110,12 +148,21 @@ public sealed class CurryEditor : Game
 
     protected override bool OnExiting(object sender, EventArgs args)
     {
-        if (SceneHasUnsavedChanges)
+        if (!_editorRenderer.OnExiting())
         {
-            ImGui.OpenPopup("###exit_confirmation");
             return false;
         }
-
+        
+        ImGui.SaveIniSettingsToDisk(Path.Combine(AppDataPath, "curry-imgui.ini"));
+        Log.Information("Exiting");
+        new Thread(() =>
+        {
+            Thread.Sleep(500);
+            Log.Debug("Killing process.");
+            Log.Debug("https://github.com/FNA-XNA/FNA/issues/416");
+            Process.GetCurrentProcess().Kill();
+        }).Start();
+        this.Dispose();
         return true;
     }
 
@@ -130,7 +177,7 @@ public sealed class CurryEditor : Game
 
         if (Keyboard.GetState().IsKeyDown(Keys.LeftControl) && Keyboard.GetState().IsKeyDown(Keys.S))
         {
-            SceneHasUnsavedChanges = false;
+            SaveCurrentScene();
         }
         
         base.Update(gameTime);

@@ -9,7 +9,9 @@ public class OpenProjectEditorPanel : EditorPanel
     private bool _popupOpen = false;
     private bool _open = true;
     private string _path = Environment.CurrentDirectory;
-
+    
+    private bool _previousSesionPathScanned;
+    
     public OpenProjectEditorPanel(EditorRenderer renderer)
     {
         _renderer = renderer;
@@ -17,6 +19,16 @@ public class OpenProjectEditorPanel : EditorPanel
 
     public override void Render()
     {
+        if (!_previousSesionPathScanned)
+        {
+            _previousSesionPathScanned = true;
+
+            if (File.Exists(Path.Combine(CurryEditor.AppDataPath, "PREVIOUS_SESSION_PATH")))
+            {
+                _path = File.ReadAllText(Path.Combine(CurryEditor.AppDataPath, "PREVIOUS_SESSION_PATH"));
+            }
+        }
+        
         const string id = "###open_project";
 
         if (ImGui.IsPopupOpen(id) && !_popupOpen)
@@ -46,10 +58,38 @@ public class OpenProjectEditorPanel : EditorPanel
 
         if (ImGui.Button("Open"))
         {
-            _renderer.Editor.Project = CurryProject.Load(_path);
+            var fileName = _path;
+            
+            if (!File.Exists(_path) && Directory.Exists(_path) && Directory.GetFiles(_path).Any(x => Path.GetExtension(x).Contains(CurryProject.STD_FS_EXTENSION)))
+            {
+                fileName = Directory.GetFiles(_path)
+                    .First(x => Path.GetExtension(x).Contains(CurryProject.STD_FS_EXTENSION));
+            }
+            else if (!File.Exists(_path))
+            {
+                return;
+            }
+            
+            using var fs = File.OpenRead(fileName);
+            var project = CurryProject.Read(new BinaryReader(fs));
+
+            _renderer.Editor.DestroyGame();
+
+            _renderer.Editor.SetProject(project, _path, fileName);
+            
             _renderer.Editor.CreateGame();
+            
             this.ShouldBeRemoved = true;
             ImGui.CloseCurrentPopup();
+
+            try
+            {
+                File.WriteAllText(Path.Combine(CurryEditor.AppDataPath, "PREVIOUS_SESSION_PATH"), _path);
+            }
+            catch
+            {
+                // ignored
+            }
         }
         
         ImGui.EndPopup();

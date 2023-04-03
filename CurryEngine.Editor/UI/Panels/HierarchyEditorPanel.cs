@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using CurryEngine.Components;
 using IconFonts;
 using ImGuiNET;
 
@@ -16,7 +17,7 @@ public class HierarchyEditorPanel : EditorPanel
 
     public override void Render()
     {
-        ImGui.Begin($"{FontAwesome4.List} Hierarchy###hierarchy-panel");
+        ImGui.Begin($"{FontAwesome4.List} Hierarchy###hierarchy-panel", _renderer.Editor.SceneHasUnsavedChanges ? ImGuiWindowFlags.UnsavedDocument : ImGuiWindowFlags.None);
 
         if (_renderer.Editor.Game?.ActiveScene is not null)
         {
@@ -27,7 +28,11 @@ public class HierarchyEditorPanel : EditorPanel
                     _renderer.Editor.Game.ActiveScene.Children.Add(new GameObject
                     {
                         Name = "New GameObject",
-                        Id = Guid.NewGuid()
+                        Id = Guid.NewGuid(),
+                        Components = new List<Component>()
+                        {
+                            new TransformComponent(Guid.NewGuid())
+                        }
                     });
                     _renderer.Editor.SceneHasUnsavedChanges = true;
                 }
@@ -82,7 +87,18 @@ public class HierarchyEditorPanel : EditorPanel
                             var parent = _dragItem.Value.Key;
                             var target = _dragItem.Value.Value;
 
-                            if (item.Children.Contains(target) || item == target || item == parent || target.Children.Contains(item))
+                            bool IsChild(IGameObjectParent item, IGameObjectParent target)
+                            {
+                                if (item.Children.Contains(target)) return true;
+                                foreach (var targetChild in target.Children)
+                                {
+                                    if (IsChild(item, targetChild)) return true;
+                                }
+
+                                return false;
+                            }
+
+                            if (IsChild(target, parent) || item == target || item == parent || target.Children.Contains(item))
                             {
                                 
                             }

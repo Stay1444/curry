@@ -92,6 +92,12 @@
       <EmbeddedResource Include="Resources\Icons\caret-right.svg" />
       <None Remove="Resources\Icons\caret-up.svg" />
       <EmbeddedResource Include="Resources\Icons\caret-up.svg" />
+      <None Remove="Resources\Icons\gizmo.png" />
+      <EmbeddedResource Include="Resources\Icons\gizmo.png" />
+      <None Remove="Resources\Icons\camera.png" />
+      <EmbeddedResource Include="Resources\Icons\camera.png" />
+      <None Remove="Resources\Icons\image.png" />
+      <EmbeddedResource Include="Resources\Icons\image.png" />
     </ItemGroup>
 
     <ItemGroup>

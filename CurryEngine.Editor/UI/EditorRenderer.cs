@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 using CurryEngine.Editor.Rendering.ImGUI;
 using CurryEngine.Editor.UI.Panels;
 using IconFonts;
@@ -28,7 +29,19 @@ public class EditorRenderer : IDisposable
         
         // Enable docking
         ImGui.GetIO().ConfigFlags = ImGuiConfigFlags.DockingEnable;
-       
+
+        unsafe
+        {
+            var path = Path.Combine(CurryEditor.AppDataPath, "curry-imgui.ini");
+
+            ImGui.GetIO().NativePtr->IniFilename = null;
+
+            if (File.Exists(path))
+            {
+                ImGui.LoadIniSettingsFromDisk(path);
+            }
+        }
+        
         ImGuiUtils.SetupImGuiStyle();
 
         // TODO: Load fonts from memory / assembly storage.
@@ -101,9 +114,23 @@ public class EditorRenderer : IDisposable
             new InspectorEditorPanel(this),
             new HierarchyEditorPanel(this),
             new ViewportEditorPanel(this),
+            new UnsavedChangesEditorPanel(this)
         });
     }
 
+    public bool OnExiting()
+    {
+        foreach (var panel in _panels)
+        {
+            if (!panel.OnExiting())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
     public void Render(GameTime gameTime)
     {
         _renderer.BeforeLayout(gameTime);
@@ -157,12 +184,12 @@ public class EditorRenderer : IDisposable
                         _panels.Add(new NewSceneEditorPanel(this));
                     }
 
-                    if (ImGui.MenuItem("Save Scene", "Ctrl+S"))
+                    if (ImGui.MenuItem("Save Scene", "Ctrl+S", false, _editor.Game?.ActiveScene is not null))
                     {
-                        // TODO
+                        _editor.SaveCurrentScene();
                     }
 
-                    if (ImGui.MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+                    if (ImGui.MenuItem("Save Scene As...", "Ctrl+Shift+S", false, false))
                     {
                         // TODO
                     }    

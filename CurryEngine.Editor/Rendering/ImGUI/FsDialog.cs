@@ -1,4 +1,6 @@
-﻿using CurryEngine.Editor.UI;
+﻿using CurryEngine.Editor.Assets;
+using CurryEngine.Editor.UI;
+using CurryEngine.IO;
 using IconFonts;
 using ImGuiNET;
 using Serilog;
@@ -22,7 +24,7 @@ public class FsDialog
     private class FsItem
     {
         public string FullName { get; set; }
-        public string Name { get; set; }
+        public string Name;
         public bool Directory { get; set; }
         public bool AccessDenied { get; set; }
         public List<FsItem>? Children;
@@ -33,8 +35,9 @@ public class FsDialog
     private readonly string _originPath;
     private FsDialogFlags _flags;
     private readonly string[] _extensionFilter;
-
+    private string? _renaming = null;
     private string __path;
+    private readonly CurryEditor _editor;
     private string _path
     {
         get => __path;
@@ -58,8 +61,9 @@ public class FsDialog
     
     private FsItem _fsModel;
     
-    private FsDialog(string path, FsDialogFlags flags, string[] extensionFilter, ImGuiRenderer renderer, string rootPath, string? rootName = null)
+    private FsDialog(string path, FsDialogFlags flags, string[] extensionFilter, ImGuiRenderer renderer, string rootPath, string? rootName, CurryEditor editor)
     {
+        this._editor = editor;
         _flags = flags;
         _extensionFilter = extensionFilter;
         _renderer = renderer;
@@ -76,20 +80,20 @@ public class FsDialog
         };
     }
 
-    public static FsDialog Create(string path, FsDialogFlags flags, ImGuiRenderer renderer)
+    public static FsDialog Create(string path, FsDialogFlags flags, CurryEditor editor)
     {
-        return new FsDialog(path, flags, Array.Empty<string>(), renderer, Path.GetPathRoot(Environment.CurrentDirectory));
+        return new FsDialog(path, flags, Array.Empty<string>(), editor.EditorRenderer.ImGuiRenderer, Path.GetPathRoot(Environment.CurrentDirectory), null, editor);
     }
 
-    public static FsDialog Create(string path, FsDialogFlags flags, string[] extensionFilter, ImGuiRenderer renderer)
+    public static FsDialog Create(string path, FsDialogFlags flags, string[] extensionFilter, CurryEditor editor)
     {
-        return new FsDialog(path, flags, extensionFilter, renderer, Path.GetPathRoot(Environment.CurrentDirectory));
+        return new FsDialog(path, flags, extensionFilter, editor.EditorRenderer.ImGuiRenderer, Path.GetPathRoot(Environment.CurrentDirectory), null, editor);
     }
 
     public static FsDialog Create(string path, FsDialogFlags flags, string[] extensionFilter, ImGuiRenderer renderer,
-        string rootPath, string rootName)
+        string rootPath, string rootName, CurryEditor editor)
     {
-        return new FsDialog(path, flags, extensionFilter, renderer, rootPath, rootName);
+        return new FsDialog(path, flags, extensionFilter, editor.EditorRenderer.ImGuiRenderer, rootPath, rootName, editor);
     }
     
     private bool IsActive(string path)
@@ -247,6 +251,11 @@ public class FsDialog
                         _path = file.FullName;
                     }
                     
+                    if (ImGui.MenuItem("Rename"))
+                    {
+                        _renaming = _renaming == file.FullName ? null : file.FullName;
+                    }
+                    
                     ImGui.Separator();
 
                     if (ImGui.MenuItem("Delete"))
@@ -265,13 +274,26 @@ public class FsDialog
                     _path = file.FullName;
                 }
 
-                var name = file.Name;
-                if (name.Length > 12)
+                if (_renaming != file.FullName)
                 {
-                    name = name.Substring(0, 12) + "...";
+                    var name = file.Name;
+                    if (name.Length > 12)
+                    {
+                        name = name.Substring(0, 12) + "...";
+                    }
+                    
+                    ImGui.TextWrapped(name);
                 }
-                
-                ImGui.TextWrapped(name);
+                else
+                {
+                    if (ImGui.InputText("", ref file.Name, 100, ImGuiInputTextFlags.EnterReturnsTrue))
+                    {
+                        var repl = file.FullName.Replace(Path.GetFileName(file.FullName)!, file.Name);
+                        Directory.Move(file.FullName, repl);
+                        item.Children = null;
+                        _renaming = null;
+                    }
+                }
                 
                 ImGui.NextColumn();
                 
@@ -287,20 +309,57 @@ public class FsDialog
                 ImGui.PushStyleColor(ImGuiCol.Button, new Num.Vector4(0,0,0,0));
                 ImGui.ImageButton(file.FullName + "##button", icon, new Num.Vector2(64, 64));
                 
+                if (ImGui.BeginPopupContextItem(file.FullName +"###right-click"))
+                {
+                    if (ImGui.MenuItem("Rename"))
+                    {
+                        if (_renaming == file.FullName)
+                        {
+                            _renaming = null;
+                        }
+                        else
+                        {
+                            _renaming = file.FullName;
+                        }
+                    }
+                    
+                    ImGui.Separator();
+
+                    if (ImGui.MenuItem("Delete"))
+                    {
+                        File.Delete(file.FullName);
+                        item.Children = null;
+                    }
+                    
+                    ImGui.EndPopup();
+                }
+                
                 ImGui.PopStyleColor();
 
                 if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                 {
                     selection = file.FullName;
                 }
-                
-                var name = file.Name;
-                if (name.Length > 12)
+
+                if (_renaming != file.FullName)
                 {
-                    name = name.Substring(0, 12) + "...";
+                    var name = file.Name;
+                    if (name.Length > 12)
+                    {
+                        name = name.Substring(0, 12) + "...";
+                    }
+
+                    ImGui.TextWrapped(name);
                 }
-                
-                ImGui.TextWrapped(name);
+                else
+                {
+                    if (ImGui.InputText("", ref file.Name, 100, ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll))
+                    {
+                        File.Move(file.FullName, file.FullName.Replace(Path.GetFileName(file.FullName), file.Name));
+                        item.Children = null;
+                        _renaming = null;
+                    }
+                }
                 
                 ImGui.NextColumn();
                 
@@ -368,7 +427,17 @@ public class FsDialog
                     {
                         if (_flags.HasFlag(FsDialogFlags.Relative))
                         {
-                            _path = Path.GetRelativePath(Environment.CurrentDirectory, parentFullName) + Path.DirectorySeparatorChar;
+                            var target = Path.GetRelativePath(Environment.CurrentDirectory, parentFullName) +
+                                         Path.DirectorySeparatorChar; // TODO UGLY CODE AHEAD
+                            
+                            if (!target.StartsWith("." + Path.DirectorySeparatorChar))
+                            {
+                                _path = $".{Path.DirectorySeparatorChar}{target}";
+                            }
+                            else
+                            {
+                                _path = target;
+                            }
                         }
                         else
                         {
@@ -417,6 +486,36 @@ public class FsDialog
         {
             if (ImGui.BeginMenu("New"))
             {
+                if (ImGui.MenuItem($"{FontAwesome4.Film} Scene"))
+                {
+                    var scene = new Scene(Guid.NewGuid());
+                    scene.Name = "Scene";
+                    
+                    var fileName = $"{scene.Name}.cscn";
+                    var iter = 0;
+                    
+                    while (File.Exists(Path.Combine(_path, fileName)))
+                    {
+                        fileName = $"{scene.Name}{++iter}.cscn";
+                    }
+
+
+                    using var fs = File.OpenWrite(Path.Combine(_path, fileName));
+                    
+                    SceneSerializationHelper.Serialize(scene, new BinaryWriter(fs));
+                    if (_selectedFsItem is not null)
+                    {
+                        _selectedFsItem.Children = null;
+                    }
+                }
+
+                if (ImGui.MenuItem($"{FontAwesome4.Code} Script"))
+                {
+                    
+                }
+                
+                ImGui.Separator();
+
                 if (ImGui.MenuItem("Directory"))
                 {
                     int id = 0;
@@ -426,12 +525,20 @@ public class FsDialog
                         id++;
                     }
 
-                    Directory.CreateDirectory("New Directory" + id);
+                    Directory.CreateDirectory(Path.Combine(_path, "New Directory" + id));
                     _selectedFsItem!.Children = null;
                 }
                 
                 ImGui.EndMenu();
             }
+
+            ImGui.Separator();
+            
+            if (ImGui.MenuItem("Reload"))
+            {
+                _selectedFsItem!.Children = null;
+            }
+            
             ImGui.EndPopup();
         }
         

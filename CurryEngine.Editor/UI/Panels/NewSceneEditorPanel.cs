@@ -57,7 +57,7 @@ public class NewSceneEditorPanel : EditorPanel
         {
             if (ImGui.Button("Create"))
             {
-                var scene = new Scene();
+                var scene = new Scene(Guid.NewGuid());
                 scene.Name = _name;
                 File.WriteAllText(_name + ".cscn", JsonSerializer.Serialize(scene));
                 _renderer.Editor.ChangeScene(scene);
