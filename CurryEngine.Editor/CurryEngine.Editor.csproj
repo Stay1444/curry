@@ -98,6 +98,15 @@
       <EmbeddedResource Include="Resources\Icons\camera.png" />
       <None Remove="Resources\Icons\image.png" />
       <EmbeddedResource Include="Resources\Icons\image.png" />
+      <None Remove="Resources\Lib\FNA.dll" />
+      <None Remove="Resources\Lib\FAudio.dll" />
+      <EmbeddedResource Include="Resources\Lib\FAudio.dll" />
+      <None Remove="Resources\Lib\FNA3D.dll" />
+      <EmbeddedResource Include="Resources\Lib\FNA3D.dll" />
+      <None Remove="Resources\Lib\libtheorafile.dll" />
+      <EmbeddedResource Include="Resources\Lib\libtheorafile.dll" />
+      <None Remove="Resources\Lib\SDL2.dll" />
+      <EmbeddedResource Include="Resources\Lib\SDL2.dll" />
     </ItemGroup>
 
     <ItemGroup>
