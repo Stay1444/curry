@@ -93,6 +93,7 @@ public class EditorRenderer : IDisposable
         _renderer.RebuildFontAtlas();
 
         FileExtensionImageProvider.Register(_renderer);
+        DynamicIconManager.Initialize(_renderer);
         
         Reload();
     }

@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using CurryEngine.Components;
 using IconFonts;
 using ImGuiNET;
@@ -79,15 +80,16 @@ public class InspectorEditorPanel : EditorPanel
                     }
                     ImGui.EndPopup();
                 }
-                
-                for (var index = 0; index < _renderer.Editor.SelectedEntity.Components.Count; index++)
-                {
-                    var component = _renderer.Editor.SelectedEntity.Components[index];
-                    RenderComponent(_renderer.Editor.SelectedEntity, component);
-                    ImGui.Separator();
-                }
 
-                
+                if (_renderer.Editor.Project is not null && _renderer.Editor.Game is not null)
+                {
+                    for (var index = 0; index < _renderer.Editor.SelectedEntity.Components.Count; index++)
+                    {
+                        var component = _renderer.Editor.SelectedEntity.Components[index];
+                        RenderComponent(_renderer.Editor.SelectedEntity, component);
+                        ImGui.Separator();
+                    }
+                }
             }
         }
         ImGui.End();
@@ -158,8 +160,48 @@ public class InspectorEditorPanel : EditorPanel
         }else if (component is SpriteComponent spriteComponent)
         {
             BeginRenderComponent(IconManager.I_Image_Icon, "Sprite");
+
+            if (_renderer.Editor.Project!.AssetDescriptors.ContainsKey(spriteComponent.AssetId))
+            {
+                var descriptor = _renderer.Editor.Project!.AssetDescriptors[spriteComponent.AssetId];
+                
+                ImGui.Text(Path.GetFileName(descriptor.Path));
+                
+                ImGui.Image(DynamicIconManager.Instance.GetOrLoad(descriptor.Path), new Vector2(64, 64));
+            }
+            else
+            {
+                ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + 16, ImGui.GetCursorPosY() + 32));
+                ImGui.Text("< Sprite > ");
+
+                ImGui.SameLine();
+
+                var imageSize = new Vector2(64, 64);
+                var spaceAvail = ImGui.GetContentRegionAvail();
+                var cursorPosition = ImGui.GetCursorPos();
+                var targetPos = new Vector2(spaceAvail.X, cursorPosition.Y - imageSize.Y / 2 + 16); // Why are we dividing by 4?
             
-            ImGui.Text("TODO");
+                ImGui.SetCursorPos(targetPos);
+                ImGui.Image(IconManager.I_FailedImage_Icon.GetImGuiId(_renderer.ImGuiRenderer), new Vector2(64,64));
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    var payload = ImGui.AcceptDragDropPayload("asset/image");
+                    unsafe
+                    {
+                        if (payload.NativePtr == null) return;
+
+                        var pathBegin = (char*) payload.NativePtr->Data;
+                        var length = payload.NativePtr->DataSize;
+
+                        var sb = new StringBuilder();
+                        for (var i = 0; i < length; i++)
+                        {
+                            sb.Append(pathBegin[i]);
+                        }
+                    }
+                }
+            }
             
             EndRenderComponent();
         }

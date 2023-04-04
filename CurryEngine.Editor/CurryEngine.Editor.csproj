@@ -107,6 +107,8 @@
       <EmbeddedResource Include="Resources\Lib\libtheorafile.dll" />
       <None Remove="Resources\Lib\SDL2.dll" />
       <EmbeddedResource Include="Resources\Lib\SDL2.dll" />
+      <None Remove="Resources\Icons\failed.png" />
+      <EmbeddedResource Include="Resources\Icons\failed-image.png" />
     </ItemGroup>
 
     <ItemGroup>

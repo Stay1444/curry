@@ -21,4 +21,8 @@ public static class IconManager
         = new("CurryEngine.Editor.Resources.Icons.camera.png", 512, 512);
     public static readonly Icon I_Image_Icon
         = new("CurryEngine.Editor.Resources.Icons.image.png", 512, 512);
+
+    public static readonly Icon I_FailedImage_Icon
+        = new("CurryEngine.Editor.Resources.Icons.failed-image.png", 512, 512);
+
 }
