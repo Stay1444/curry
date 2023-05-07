@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using CurryEngine.Components;
 using IconFonts;
 using ImGuiNET;
@@ -70,7 +71,11 @@ public class HierarchyEditorPanel : EditorPanel
             if (ImGui.BeginDragDropSource())
             {
                 ImGui.Text(item.Name);
-                ImGui.SetDragDropPayload("GameObject", 0, 0);
+
+                var text = "hello";
+                var bytes = Encoding.Unicode.GetBytes(text).AsSpan();
+                ImGui.SetDragDropPayload("test", (nint)bytes[0], (uint)bytes.Length);
+
                 _dragItem = new KeyValuePair<IGameObjectParent, IGameObjectParent>(parent, item);
                 ImGui.EndDragDropSource();
             }

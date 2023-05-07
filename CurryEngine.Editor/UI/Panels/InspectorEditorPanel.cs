@@ -4,6 +4,7 @@ using CurryEngine.Components;
 using IconFonts;
 using ImGuiNET;
 using Microsoft.Xna.Framework.Input;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace CurryEngine.Editor.UI.Panels;
 
@@ -186,19 +187,23 @@ public class InspectorEditorPanel : EditorPanel
 
                 if (ImGui.BeginDragDropTarget())
                 {
-                    var payload = ImGui.AcceptDragDropPayload("asset/image");
+                    var payload = ImGui.AcceptDragDropPayload("test");
                     unsafe
                     {
-                        if (payload.NativePtr == null) return;
-
-                        var pathBegin = (char*) payload.NativePtr->Data;
-                        var length = payload.NativePtr->DataSize;
-
-                        var sb = new StringBuilder();
-                        for (var i = 0; i < length; i++)
+                        if (payload.NativePtr != null)
                         {
-                            sb.Append(pathBegin[i]);
+                            var textBegin = (byte*) payload.NativePtr->Data;
+                            var length = payload.NativePtr->DataSize;
+
+                            var sb = new StringBuilder();
+                            for (var i = 0; i < length; i += 2) // iterate over each UTF-16 character (which takes two bytes)
+                            {
+                                var character = Encoding.Unicode.GetString(textBegin + i, 2)[0];
+                                sb.Append(character);
+                            }
+                            Console.WriteLine(sb.ToString());
                         }
+                        ImGui.EndDragDropTarget();
                     }
                 }
             }

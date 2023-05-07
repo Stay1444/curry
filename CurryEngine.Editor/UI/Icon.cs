@@ -1,6 +1,7 @@
 ﻿using System.Drawing.Imaging;
 using System.Reflection;
 using CurryEngine.Editor.Rendering.ImGUI;
+using ImGuiNET;
 using Microsoft.Xna.Framework.Graphics;
 using Serilog;
 using Svg;
@@ -29,7 +30,6 @@ public class Icon
     public nint GetImGuiId(ImGuiRenderer renderer)
     {
         if (_imGuiInitialized) return _imGuiId;
-
         Initialize(renderer);
         _imGuiInitialized = true;
         return _imGuiId;
